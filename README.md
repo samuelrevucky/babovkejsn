@@ -1,3 +1,2 @@
 # babovkejsn
-![image](https://github.com/samuelrevucky/babovkejsn/assets/83767476/f74bcec7-3627-4041-bd82-c150223aa3dc)
-
+![image](https://github.com/samuelrevucky/babovkejsn/assets/83767476/570acadc-985c-43f4-a1a4-e4bf46bdbfc4)
