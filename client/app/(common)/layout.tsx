@@ -1,22 +1,15 @@
-'use client';
-
 import { Inter } from "next/font/google";
 import Image from "next/image";
-import Link from 'next/link';
-import { usePathname } from 'next/navigation'
+import NavItem from './navitem';
 
 const inter = Inter({ subsets: ["latin"] });
 
-function NavItem ({ href, children }: Readonly<{ href: string; children: React.ReactNode; }>) {
-  const pathname = usePathname()
-  return (
-    <Link href={href} className={`text-m font-semibold leading-6 text-gray-900 px-4 py-2 rounded-lg transition-colors duration-300 ${pathname === href ? 'bg-gray-300' : 'hover:bg-gray-300 hover:text-white'}`}>
-        {children}
-    </Link>
-  );
-};
 
-export default function GuestLayout({ children, }: Readonly<{ children: React.ReactNode; }>) {
+export default function Layout(
+  { children }: 
+  Readonly<{ 
+    children: React.ReactNode; 
+  }>) {
     return (
       <>
       <header className="bg-white">
@@ -37,7 +30,6 @@ export default function GuestLayout({ children, }: Readonly<{ children: React.Re
             </div>
             <div className="flex gap-x-12">
               <NavItem href="/home">Domov</NavItem>
-              <NavItem href="/about">O nás</NavItem>
               <NavItem href="/products">Produkty</NavItem>
               <NavItem href="/order">Objednať</NavItem>
             </div>
@@ -46,7 +38,7 @@ export default function GuestLayout({ children, }: Readonly<{ children: React.Re
             </div>
         </nav>
         </header>
-      <>{children}</>
+        {children}
       </>
     );
   }
