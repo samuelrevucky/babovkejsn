@@ -61,7 +61,7 @@ export default function Login() {
   
             <p className="mt-10 text-center text-sm text-gray-500">
               Nemáte účet?{' '}
-              <a href="#" className="font-semibold leading-6 text-yellow-500 hover:text-yellow-400">
+              <a href="/register" className="font-semibold leading-6 text-yellow-500 hover:text-yellow-400">
                 Zaregistrujte sa
               </a>
             </p>
