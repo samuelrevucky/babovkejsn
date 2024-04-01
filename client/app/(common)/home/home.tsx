@@ -25,7 +25,7 @@ export default function Home() {
 
       <div className=" grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
         <div className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30">
-          <h2 className={`mb-3 text-2xl font-semibold`}>
+          <h2 className={`${bebas.className} mb-3 text-2xl font-semibold`}>
             Čerstvosť
           </h2>
           <p className={`m-0 max-w-[30ch] text-sm opacity-80 text-balance`}>
@@ -34,7 +34,7 @@ export default function Home() {
         </div>
 
         <div className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30">
-          <h2 className={`mb-3 text-2xl font-semibold`}>
+          <h2 className={`${bebas.className} mb-3 text-2xl font-semibold`}>
             Tradícia
           </h2>
           <p className={`m-0 max-w-[30ch] text-sm opacity-80 text-balance`}>
@@ -43,7 +43,7 @@ export default function Home() {
         </div>
 
         <div className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30">
-          <h2 className={`mb-3 text-2xl font-semibold`}>
+          <h2 className={`${bebas.className} mb-3 text-2xl font-semibold`}>
             Bratislava
           </h2>
           <p className={`m-0 max-w-[30ch] text-sm opacity-80 text-balance`}>
@@ -52,7 +52,7 @@ export default function Home() {
         </div>
 
         <div className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30">
-          <h2 className={`mb-3 text-2xl font-semibold`}>
+          <h2 className={`${bebas.className} mb-3 text-2xl font-semibold`}>
             Nie len bábovky
           </h2>
           <p className={`m-0 max-w-[30ch] text-sm opacity-80 text-balance`}>
