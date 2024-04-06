@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         {children}
-        <div className="flex items-center justify-center p-20">
+        <div className="flex items-center justify-center mt-10 py-2">
           <Image 
             src="/babovka_logo.png"
             alt="mini logo babovkejsn"
