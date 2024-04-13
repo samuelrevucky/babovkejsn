@@ -10,9 +10,12 @@ export default function Login() {
 
   const router = useRouter();
 
+  const [showMessage, setShowMessage] = useState("hidden text-red-500");
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    rememberMe: false
   });
 
   const handleChange = (e: any) => {
@@ -22,19 +25,28 @@ export default function Login() {
     });
   };
 
+  const handleCheckBox = (e: any) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.checked,
+    })
+  }
+
   const handleSubmit = async () => {
     await axios.post(server_address + '/api/authenticate', {
         mail: formData.email,
-        password: formData.password
+        password: formData.password,
+        rememberMe: formData.rememberMe
     }, { 
         withCredentials: true,
     })
     .then(function (response) {
         if (response.data.authenticated) {
-          router.push("/user_zone");
+          router.push("/user/profile");
         }
         else {
-          setFormData({email: '', password: ''});
+          setFormData({...formData, password: ''});
+          setShowMessage("text-red-500");
         }
     })
     .catch(function (error) {
@@ -93,6 +105,26 @@ export default function Login() {
                   required
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-black-500 sm:text-sm sm:leading-6"
                 />
+              </div>
+            </div>
+
+            <div>
+              <p id="wronglogin" className={showMessage}>Nesprávny email alebo heslo!</p>
+            </div>
+
+            <div className="relative flex gap-x-3">
+              <div className="flex h-6 items-center">
+                <input
+                  id="rememberMe"
+                  name="rememberMe"
+                  type="checkbox"
+                  defaultChecked={false}
+                  onChange={handleCheckBox}
+                  className="h-4 w-4 rounded border-gray-300 accent-yellow-500 focus:ring-yellow-500 checked:color-yellow-500"
+                />
+              </div>
+              <div className="text-sm leading-6">
+                <p className="text-gray-500">Zapamätať si ma</p>
               </div>
             </div>
 
