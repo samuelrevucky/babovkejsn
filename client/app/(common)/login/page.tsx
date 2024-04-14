@@ -30,7 +30,7 @@ export default function Login() {
       ...formData,
       [e.target.name]: e.target.checked,
     })
-  }
+  };
 
   const handleSubmit = async () => {
     await axios.post(server_address + '/api/authenticate', {
@@ -43,6 +43,7 @@ export default function Login() {
     .then(function (response) {
         if (response.data.authenticated) {
           router.push("/user/profile");
+          router.refresh();
         }
         else {
           setFormData({...formData, password: ''});
@@ -52,7 +53,7 @@ export default function Login() {
     .catch(function (error) {
         console.error(error);
     });
-  }
+  };
 
   return (
     <>
@@ -148,5 +149,5 @@ export default function Login() {
         </div>
       </div>
     </>
-  )
-}
+  );
+};

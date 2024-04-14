@@ -17,7 +17,7 @@ export default function Home() {
               Naložené domáce koláče k vám domov</p>
         </div>
         <div className="flex mb-4 justify-center pb-10">
-          <Link href="/order">
+          <Link href="/user/order">
             <button className={`${bebas.className}  bg-gray-500 text-white rounded-lg items-center py-2 px-4 text-2xl`}>Objednať</button>
           </Link>
         </div>

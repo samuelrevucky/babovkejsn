@@ -114,7 +114,7 @@ export default function Babovka() {
                                 <span className="text-sm font-semibold leading-6 tracking-wide text-gray-600">EUR</span>
                                 </p>
                                 <a
-                                href="/order"
+                                href="/user/order"
                                 className="mt-10 block w-full rounded-md bg-yellow-500 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-yellow-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                 >
                                 Objednať

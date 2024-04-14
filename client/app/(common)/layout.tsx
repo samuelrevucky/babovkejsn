@@ -1,8 +1,22 @@
 import { Inter } from "next/font/google";
 import Image from "next/image";
-import { NavItem, ProductsButton } from './navitem';
+import { NavItem, ProductsButton, UserMenu} from '../utils/navitem';
+import { cookies } from "next/headers";
+import jwt from 'jsonwebtoken';
 
 const inter = Inter({ subsets: ["latin"] });
+
+
+function LoginButton() {
+  const cookieStore: any = cookies();
+  if (!cookieStore.has('authtoken')) {
+    return <NavItem href="/login">Prihlásiť sa</NavItem>;
+  }
+  else {
+    const token  = jwt.decode(cookieStore.get('authtoken').value) as { mail: string };
+    return <UserMenu user={token.mail}/>;
+  }
+}
 
 
 export default function Layout(
@@ -32,10 +46,10 @@ export default function Layout(
                 <div className="flex gap-x-12">
                   <NavItem href="/home">Domov</NavItem>
                   <ProductsButton/>
-                  <NavItem href="/order">Objednať</NavItem>
+                  <NavItem href="/user/order">Objednať</NavItem>
                 </div>
                 <div className="lg:flex lg:flex-1 lg:justify-end">
-                  <NavItem href="/login">Prihlásiť sa <span aria-hidden="true">&rarr;</span></NavItem>
+                  <LoginButton/>
                 </div>
             </nav>
           </header>
