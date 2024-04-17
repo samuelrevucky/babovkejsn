@@ -18,11 +18,6 @@ export function NavItem ({ href, children }: Readonly<{ href: string; children: 
   };
 
 
-export function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ')
-}
-
-
 export function ProductsButton() {
   const pathname = usePathname()
   const re = new RegExp("\/products\/[a-z]+");
@@ -50,10 +45,7 @@ export function ProductsButton() {
               {({ active }) => (
                 <a
                   href="/products/babovka"
-                  className={classNames(
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                    'block px-4 py-2 text-sm'
-                  )}
+                  className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'} block px-4 py-2 text-sm`}
                 >
                   Bábovka
                 </a>
@@ -63,10 +55,7 @@ export function ProductsButton() {
               {({ active }) => (
                 <a
                   href="/products/tiramisu"
-                  className={classNames(
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                    'block px-4 py-2 text-sm'
-                  )}
+                  className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'} block px-4 py-2 text-sm`}
                 >
                   Tiramisu
                 </a>
@@ -105,10 +94,7 @@ export function UserMenu({ user }: Readonly<{user: string}>) {
               {({ active }) => (
                 <a
                   href="/user/history"
-                  className={classNames(
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                    'block px-4 py-2 text-sm'
-                  )}
+                  className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'} block px-4 py-2 text-sm`}
                 >
                   Objednávky
                 </a>
@@ -120,10 +106,7 @@ export function UserMenu({ user }: Readonly<{user: string}>) {
               {({ active }) => (
                 <a
                   href="/user/profile"
-                  className={classNames(
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                    'block px-4 py-2 text-sm'
-                  )}
+                  className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'} block px-4 py-2 text-sm`}
                 >
                   Profil
                 </a>
@@ -133,10 +116,7 @@ export function UserMenu({ user }: Readonly<{user: string}>) {
               {({ active }) => (
                 <a
                   href="/user/modify_udata"
-                  className={classNames(
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                    'block px-4 py-2 text-sm'
-                  )}
+                  className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'} block px-4 py-2 text-sm`}
                 >
                   Zmeniť údaje
                 </a>
@@ -148,10 +128,7 @@ export function UserMenu({ user }: Readonly<{user: string}>) {
             {({ active }) => (
                 <a
                   href="/signout"
-                  className={classNames(
-                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
-                    'block px-4 py-2 text-sm'
-                  )}
+                  className={`${active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'} block px-4 py-2 text-sm`}
                 >
                   Odhlásiť sa
                 </a>

@@ -1,6 +1,6 @@
 import { Inter } from "next/font/google";
 import Image from "next/image";
-import { NavItem, ProductsButton, UserMenu} from '../utils/navitem';
+import { NavItem, ProductsButton, UserMenu} from './navitem';
 import { cookies } from "next/headers";
 import jwt from 'jsonwebtoken';
 
