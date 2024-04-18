@@ -1,69 +1,11 @@
 "use client";
 
-import { Month, leftArrow, activeLeftArrow, rightArrow, activeRightArrow } from "./calendar";
+import Calendar from "./calendar";
 import Selector from "./selector";
 import { useState } from "react";
 import { Product, Day } from "./page";
 import { PlusIcon, MinusIcon, TrashIcon } from "@heroicons/react/20/solid";
 
-
-const dayNames: string[] = ['po', 'ut', 'st', 'št', 'pi', 'so', 'ne'];
-
-interface DateInfo {
-    date: number,
-    isInMonth: boolean,
-    canOrderOnThisDay: boolean
-}
-
-function createCalendar(year: number, month: number, days: Day[][], totalProductionTime: number) {
-    const firstDayOfMonth = new Date(year, month, 1);
-    const lastDayOfPreviousMonth = new Date(year, month, 0);
-    const lastDayOfMonth = new Date(year, month + 1, 0);
-    const firstDayOfWeek = firstDayOfMonth.getDay();
-
-    const alignedDates: DateInfo[] = [];
-
-    for (let i = lastDayOfPreviousMonth.getDate() - firstDayOfWeek + 2; i <= lastDayOfPreviousMonth.getDate(); i++) {
-        alignedDates.push({ date: i, isInMonth: false, canOrderOnThisDay: false });
-    }
-
-    const currentDate = new Date();
-    for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
-        if (month === currentDate.getMonth()) {
-            alignedDates.push({date: i, isInMonth: i >= currentDate.getDate(), canOrderOnThisDay: false})
-        }
-        else {
-            alignedDates.push({ date: i, isInMonth: true, canOrderOnThisDay: false });
-        }
-    }
-
-    const totalDays = alignedDates.length;
-    const remainingDays = 7 - (totalDays % 7 === 0 ? 7 : totalDays % 7);
-    for (let i = 1; i <= remainingDays; i++) {
-        alignedDates.push({ date: i, isInMonth: false, canOrderOnThisDay: false });
-    }
-
-    return (
-        <div>
-            {[...Array(alignedDates.length / 7)].map((_, weekIndex) => (
-                <div key={weekIndex} className="flex justify-between font-medium text-sm pb-2">
-                    {[...Array(7)].map((_, dayIndex) => {
-                        const index = weekIndex * 7 + dayIndex;
-                        const dateInfo = alignedDates[index];
-                        return (
-                            <span key={dayIndex} className={dateInfo.isInMonth ? 
-                                'px-1 w-14 flex justify-center items-center border hover:border-green-500 hover:text-green-500 cursor-pointer' 
-                                : 
-                                'px-1 text-gray-400 w-14 flex justify-center items-center'}>
-                                {dateInfo.date}
-                            </span>
-                        );
-                    })}
-                </div>
-            ))}
-        </div>
-    );
-};
 
 export interface cartItem {
     name: string,
@@ -77,31 +19,11 @@ export interface cartItem {
 
 export default function Order({ products, days }: { products: Product[], days: Day[][] }) {
 
-    // calendar logic
-
-    const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
-    const [isLeftArrowActive, setIsLeftArrowActive] = useState(false);
-    const [isRightArrowActive, setIsRightArrowActive] = useState(true);
-    
-    const handleLeftArrowClick = () => {
-        setSelectedMonth(selectedMonth - 1);
-        if (selectedMonth - 1 === new Date().getMonth()) {
-            setIsLeftArrowActive(false);
-        }
-        setIsRightArrowActive(true);
-    };
-
-    const handleRightArrowClick = () => {
-        setSelectedMonth(selectedMonth + 1);
-        if (selectedMonth + 2 === days.length) {
-            setIsRightArrowActive(false);
-        }
-        setIsLeftArrowActive(true);
-    };
-
-    // cartItem logic
+    // cart logic
     
     const [cart, setCart] = useState(Array<[cartItem, number]>);
+    const [selectedDate, setSelectedDate] = useState<Day>();
+    const [note, setNote] = useState('');
     
     const handleCartInput = (c: cartItem) => {
         setCart(oldCart => {
@@ -131,14 +53,24 @@ export default function Order({ products, days }: { products: Product[], days: D
             cart[i][0].quantity--;
             setCart([...cart]);
         }
-    }
+    };
     const handleIncreaseQuantity = (id: number) => {
         const i = cart.findIndex(item => item[1] === id);
         if (cart[i][0].quantity < 10) {
             cart[i][0].quantity++;
             setCart([...cart]);
         }
-    }
+    };
+    const handleSelectDate = (d: Day | undefined) => {
+        setSelectedDate(d);
+    };
+    const handleNoteChange = (e: any) => {
+        setNote(e.target.value);
+        console.log(note);
+    };
+    const handleOrderSubmit = () => {
+        
+    };
 
     let totalPrice: number = cart.reduce((acc, [cartItem, i]) => (acc + cartItem.price * cartItem.quantity), 0);
     let totalProductionTime: number = cart.reduce((acc, [cartItem, i]) => {
@@ -154,8 +86,8 @@ export default function Order({ products, days }: { products: Product[], days: D
                     products={products} 
                     handleCartInput={handleCartInput}
                 />
-                <div className="flex flex-col mx-auto w-full lg:w-1/2">
-                    <div className={`${cart.length == 0 ? 'hidden' : ''} w-full max-w-lg p-6 m-auto mb-4 bg-white rounded-2xl border-2 shadow-lg flex flex-col`}>
+                <div className="flex flex-col mx-auto w-full lg:w-1/2 gap-4">
+                    <div className={`${cart.length === 0 ? 'hidden' : ''} w-full max-w-lg p-6 m-auto bg-white rounded-2xl border-2 shadow-lg flex flex-col`}>
                         <ul role="list" className="divide-y divide-gray-100">
                             {(() => {
                                 const items = [];
@@ -209,21 +141,37 @@ export default function Order({ products, days }: { products: Product[], days: D
                             </li>
                         </ul>
                     </div>
-
-                    <div className='w-full max-w-lg p-6 m-auto bg-white rounded-2xl border-2 shadow-lg flex flex-col'>
-                        <div className="flex justify-between pb-4">
-                            {isLeftArrowActive ? activeLeftArrow(handleLeftArrowClick) : leftArrow()}
-                            <span className="uppercase text-sm font-semibold text-gray-600">{Month[selectedMonth % 12]}</span>
-                            {isRightArrowActive ? activeRightArrow(handleRightArrowClick) : rightArrow()}
+                    <Calendar days={days} totalProductionTime={totalProductionTime} handleSelectDate={handleSelectDate}/>
+                    <div className={`${selectedDate === undefined ? 'hidden' : ''} w-full max-w-lg p-6 m-auto bg-white rounded-2xl border-2 shadow-lg flex flex-col gap-5`}>
+                        <div className="flex w-full justify-between">
+                            <div className="flex flex-col">
+                                <p className="text-sm font-semibold leading-6 text-gray-900">Zvolený dátum</p>
+                                <p className="text-sm leading-6 text-gray-900">
+                                    {selectedDate === undefined ? '' : (() => {
+                                        const parts = (selectedDate.day as unknown as string).split('T')[0].split('-');
+                                        return `${parts[2]}.${parts[1]}.${parts[0]}`;
+                                    })() as string}
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                className="block rounded-md bg-yellow-500 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-yellow-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                >Objednať</button>
                         </div>
-                        <div className="flex justify-between font-medium uppercase text-xs pt-4 pb-2 border-t">
-                            {dayNames.map((day, index) => (
-                                <div key={index} className="px-3 border rounded-sm w-14 h-5 flex items-center justify-center border-black text-black-500 shadow-md">
-                                    {day}
-                                </div>
-                            ))}
+                        <div className="border-t">
+                            <p className="text-sm font-semibold leading-6 text-gray-900 mt-2">Poznámka pre nás</p>
+                            <form>
+                            <input
+                            id="note"
+                            name="note"
+                            type="text"
+                            placeholder="Napríklad adresa na doručenie, ak je iná ako Vaša v profile"
+                            value={note}
+                            onChange={handleNoteChange}
+                            className="block w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-black-500 sm:text-sm sm:leading-6"
+                            />
+                            </form>
                         </div>
-                        {createCalendar(new Date().getFullYear(), selectedMonth, days, totalProductionTime)}   
                     </div>
                 </div>
             </div>

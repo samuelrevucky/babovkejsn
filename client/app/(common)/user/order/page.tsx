@@ -49,8 +49,8 @@ export default async function Page() {
   const days: Day[][] = [];
   const month = new Date().getMonth();
   //add empty lists so that the months align with indices
-  for (let i = 0; i < month; i++) days.push([]);
-  for (let i = month; i < +month + 3; i++ ) days.push(await getDays(i));
+  for (let i = 0; i < month - 1; i++) days.push([]);
+  for (let i = month - 1; i < +month + 3; i++ ) days.push(await getDays(i));
   return (
     <Order products={products} days={days}/>
   );
