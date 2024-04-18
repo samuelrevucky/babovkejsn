@@ -4,6 +4,7 @@ import axios from "axios";
 import { useState } from "react";
 import { server_address } from "@/config";
 import { useRouter } from "next/navigation";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/20/solid";
 
 
 export default function Login() {
@@ -11,12 +12,16 @@ export default function Login() {
   const router = useRouter();
 
   const [showMessage, setShowMessage] = useState("hidden text-red-500");
-
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     rememberMe: false
   });
+
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible((prevState) => !prevState);
+  };
 
   const handleChange = (e: any) => {
     setFormData({
@@ -78,8 +83,9 @@ export default function Login() {
                   autoComplete="email"
                   value={formData.email}
                   onChange={handleChange}
+                  placeholder="email"
                   required
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-black-500 sm:text-sm sm:leading-6"
+                  className="block w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-black-500 sm:text-sm sm:leading-6"
                 />
               </div>
             </div>
@@ -95,17 +101,28 @@ export default function Login() {
                   </a>
                 </div>
               </div>
-              <div className="mt-2">
+              <div className="mt-2 relative">
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={isPasswordVisible ? "text" : "password"}
                   autoComplete="current-password"
                   value={formData.password}
                   onChange={handleChange}
+                  placeholder="heslo"
                   required
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-black-500 sm:text-sm sm:leading-6"
+                  className="block w-full rounded-md border-0 py-1.5 pl-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-black-500 sm:text-sm sm:leading-6"
                 />
+                <button
+                  className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-600"
+                  onClick={togglePasswordVisibility}
+                >
+                  {isPasswordVisible ? (
+                    <EyeSlashIcon className="w-5 h-5"/>
+                  ) : (
+                    <EyeIcon className="w-5 h-5"/>
+                  )}
+                </button>
               </div>
             </div>
 
