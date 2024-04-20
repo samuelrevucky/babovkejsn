@@ -1,6 +1,7 @@
 import axios from "axios";
 import { server_address } from "@/config";
 import Order from "./order";
+import { cookies } from "next/headers";
 
 
 export interface Product {
@@ -27,31 +28,35 @@ export interface Day {
 }
 
 async function getProducts() {
-  try {
-      const response = await axios.get(server_address + '/api/products');
-      return response.data;
-  } catch (error) {
-      console.error(error);
-  }
+  const response = await axios.get(server_address + '/api/products', {withCredentials: true});
+  return response.data;
 };
 
 async function getDays(month: number) {
-  try {
-    const response = await axios.get(server_address + '/api/days/' + month);
-    return response.data;
-  } catch (error) {
-      console.error(error);
-  }
+  const response = await axios.get(server_address + '/api/days/' + month, {withCredentials: true});
+  return response.data;
 }
 
 export default async function Page() {
-  const products: Product[] = await getProducts();
-  const days: Day[][] = [];
-  const month = new Date().getMonth();
-  //add empty lists so that the months align with indices
-  for (let i = 0; i < month - 1; i++) days.push([]);
-  for (let i = month - 1; i < +month + 3; i++ ) days.push(await getDays(i));
-  return (
-    <Order products={products} days={days}/>
-  );
+  try {
+    const products: Product[] = await getProducts();
+    const days: Day[][] = [];
+    const month = new Date().getMonth();
+    //add empty lists so that the months align with indices
+    for (let i = 0; i < month - 1; i++) days.push([]);
+    for (let i = month - 1; i < +month + 3; i++ ) days.push(await getDays(i));
+    return (
+      <Order products={products} days={days}/>
+    );
+  }
+  catch (err) {
+    console.error(err);
+    return (
+      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+          Hups, niečo sa pokazilo
+        </h2>
+      </div>
+    );
+  }
 }

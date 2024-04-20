@@ -1,13 +1,16 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import cors from 'cors';
 dotenv.config();
 import { Client } from 'pg';
 import jwt, { Secret } from 'jsonwebtoken';
+import { error } from 'console';
 
 
 const app = express();
-app.use(express.json())
+app.use(express.json());
+app.use(cookieParser());
 app.use(cors({
     origin: 'http://localhost:3000',
     credentials: true
@@ -19,6 +22,10 @@ client.connect();
 
 
 app.post('/api/authenticate', (req, res) => {
+
+    // TODO: hash passwords //
+    //////////////////////////
+
     const { mail, password, rememberMe } = req.body;
     client
     .query(`select * from users where mail = $1`, [mail])
@@ -45,9 +52,24 @@ app.post('/api/authenticate', (req, res) => {
     .catch(err => {
         console.error(err);
     })
-  });
+});
 
-  app.get('/api/products', (req, res) => {
+
+// middleware verification function
+const cookieJwtAuth = (req: Request, res: Response, next: NextFunction) => {
+    const token = req.cookies.authtoken;
+    try {
+        jwt.verify(token, process.env.SECRET as Secret);
+        next();
+    } 
+    catch (err) {
+        res.clearCookie(token);
+        res.status(401).json({error: "invalid token"});
+    }
+};
+
+
+app.get('/api/products', (req, res) => {
     client
         .query("select * from products order by id;")
         .then(dbres => {
@@ -56,55 +78,133 @@ app.post('/api/authenticate', (req, res) => {
         .catch(err => {
             console.error(err);
         })
-  });
+});
 
-  function insertDaysIntoDB(month: number) {
-    let year = new Date().getFullYear();
-    if (month < new Date().getMonth()) {
-        year++;
-    }
-    const currentDate = new Date(year, month, 1);
+async function insertDaysIntoDB(month: number) {
+    const currentDate = new Date(Date.UTC(new Date().getFullYear(), month, 1));
     while (currentDate.getMonth() == month) {
-        let date = currentDate.getFullYear() + '-' + (currentDate.getMonth() + 1) + '-' + currentDate.getDate();
-        console.log(date);
-        client.query("insert into days values($1,$2,$3,$4,$5);", [date, 3, 3, false, '']);
+        await client.query("insert into days values($1,$2,$3,$4,$5);", [currentDate.toISOString().split('T')[0], 3, 3, false, '']);
         currentDate.setDate(currentDate.getDate() + 1);
     }
-  };
+};
 
-  app.get('/api/days/:month', (req, res) => {
+app.get('/api/days/:month', async (req, res) => {
 
-    // TODO!! authentication on this route //
-    //                                     //
-    /////////////////////////////////////////
-
-    const month = req.params.month;
+    const month: number = +req.params.month;
     const year = new Date().getFullYear();
-    const firstDay = new Date(year, +month, 2);
-    const lastDay = new Date(year, +month+1, 1);
-    console.log(firstDay, lastDay);
-    client
+    const firstDay = new Date(Date.UTC(year, month, 1));
+    const lastDay = new Date(Date.UTC(year, month + 1, 0));
+    await client
         .query("select day from days order by day desc limit 1;")
-        .then(dbres => {
-            const lastDBDay = new Date(dbres.rows[0].day);
-            console.log(lastDBDay.getMonth(), month);
-            if (lastDBDay.getMonth() === +month) {
-                console.log("treba doplnit");
-                insertDaysIntoDB(+month+1);
+        .then(async dbres => {
+            if (dbres.rowCount == 0) {
+                console.log("adding days to table");
+                await insertDaysIntoDB(month);
+            }
+            else if (dbres.rows[0].day.getMonth() < month) {
+                console.log("adding days to table");
+                await insertDaysIntoDB(month);
             };
         })
         .catch(err => {
             console.error(err);
         });
 
-    client
-        .query("select * from days where day >= $1 and day <= $2;", [firstDay, lastDay])
+    await client
+        .query("select * from days where day >= $1 and day <= $2 order by day;", [firstDay, lastDay])
         .then(dbres => {
-            res.status(200).json(dbres.rows);
+            res.status(200).json(dbres.rows.map(row => {
+                const dbdate = row.day;
+                row.day = new Date(Date.UTC(dbdate.getFullYear(), dbdate.getMonth(), dbdate.getDate()));
+                return row;
+            }));
         })
         .catch(err => {
             console.error(err);
         });
-  }); 
+}); 
 
+interface Token {
+    id: number,
+    role: string,
+    mail: string,
+    iat: number,
+    exp: number
+};
+
+app.post('/api/submit_order', cookieJwtAuth, async (req, res) => {
+
+    // TODO deposit management
+    
+    const user: Token = jwt.decode(req.cookies.authtoken) as Token;
+    const { order_deadline, preparation_time, price, details, note } = req.body;
+    let currentDate = new Date();
+    currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+    currentDate.setMinutes(currentDate.getMinutes() - currentDate.getTimezoneOffset());
+    if (new Date().getHours() > 16) currentDate.setDate(currentDate.getDate() + 1);
+    const tmp = new Date(order_deadline);
+    tmp.setDate(new Date(order_deadline).getDate()-3);
+    const earliestDateToStartProducing = new Date(
+        Math.max(
+            currentDate.getTime(),
+            tmp.getTime()
+        )
+    )
+    let days: any[] = [];
+    let available_wrkld = 0;
+    let leftWorkToAssign = preparation_time;
+    console.log(earliestDateToStartProducing, order_deadline);
+    await client
+        .query("begin")
+        .then(async () => {
+            await client
+                .query("select * from days where day > $1 and day <= $2 order by day desc", 
+                    [earliestDateToStartProducing, order_deadline])
+                .then(dbres => {
+                    days = dbres.rows;
+                    console.log(days);
+                    days.map(day => {available_wrkld += day.available_wrkld});
+                    if (available_wrkld < preparation_time) throw error("Nedostatok casu na vyrobu");
+                })
+        })
+        .then(async () => {
+            for (let day of days) {
+                const sub = Math.min(day.available_wrkld, leftWorkToAssign);
+                console.log(day.day);
+                await client
+                    .query("update days set available_wrkld = $1 where day = $2", 
+                    [day.available_wrkld - sub, day.day.toISOString().split('T')[0]])
+                    .then(() => {leftWorkToAssign -= sub;});
+            }
+        })
+        .then(async () => {
+            const d = new Date();
+            d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+            await client
+                .query("insert into orders (user_id, status, order_time, order_deadline, preparation_time, price, paid, details, note) values ($1,$2,$3,$4,$5,$6,$7,$8,$9);",
+                    [user.id, "pending", d, order_deadline, preparation_time, price, 0, details, note]);
+
+        })
+        .then(async () => {
+            await client 
+                .query("commit;")
+        })
+        .catch((err) => {
+            console.error('Error executing transaction:', err);
+            client.query('rollback;')
+              .then(() => {
+                console.log('Transaction rolled back');
+              })
+              .catch((rollbackErr) => {
+                console.error('Error rolling back transaction:', rollbackErr);
+                client.end();
+              })
+            res.status(500).send();
+          });
+    res.status(200).send();
+});
   
+
+app.get('/api/tmp', (req, res) => {
+    res.status(200).send("hello");
+})

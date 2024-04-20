@@ -5,6 +5,9 @@ import Selector from "./selector";
 import { useState } from "react";
 import { Product, Day } from "./page";
 import { PlusIcon, MinusIcon, TrashIcon } from "@heroicons/react/20/solid";
+import axios from "axios";
+import { server_address } from "@/config";
+import { useRouter } from "next/navigation";
 
 
 export interface cartItem {
@@ -18,7 +21,7 @@ export interface cartItem {
 };
 
 export default function Order({ products, days }: { products: Product[], days: Day[][] }) {
-
+    const router = useRouter();
     // cart logic
     
     const [cart, setCart] = useState(Array<[cartItem, number]>);
@@ -69,7 +72,15 @@ export default function Order({ products, days }: { products: Product[], days: D
         console.log(note);
     };
     const handleOrderSubmit = () => {
-        
+        axios.post(server_address + '/api/submit_order', {
+            order_deadline: selectedDate?.day,
+            preparation_time: totalProductionTime,
+            price: totalPrice,
+            details: cart.map(([cartItem, number]) => cartItem),
+            note: note
+        }, {withCredentials: true})
+        .then(() => {router.push('/user/successful_order');})
+        .catch(err => {router.push('/user/err_order')});
     };
 
     let totalPrice: number = cart.reduce((acc, [cartItem, i]) => (acc + cartItem.price * cartItem.quantity), 0);
@@ -156,6 +167,7 @@ export default function Order({ products, days }: { products: Product[], days: D
                             <button
                                 type="button"
                                 className="block rounded-md bg-yellow-500 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-yellow-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                onClick={handleOrderSubmit}
                                 >Objednať</button>
                         </div>
                         <div className="border-t">

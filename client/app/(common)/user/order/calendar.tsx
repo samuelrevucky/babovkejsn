@@ -40,6 +40,7 @@ export default function Calendar(
             setIsLeftArrowActive(false);
         }
         setIsRightArrowActive(true);
+        handleSelect(-1, undefined);
     };
 
     const handleRightArrowClick = () => {
@@ -48,6 +49,7 @@ export default function Calendar(
             setIsRightArrowActive(false);
         }
         setIsLeftArrowActive(true);
+        handleSelect(-1, undefined);
     };
 
     const handleSelect = (index: number, d: Day | undefined) => {
