@@ -170,7 +170,7 @@ app.post('/api/submit_order', cookieJwtAuth, async (req, res) => {
         .then(async () => {
             for (let day of days) {
                 const sub = Math.min(day.available_wrkld, leftWorkToAssign);
-                console.log(day.day);
+                //console.log(day.day);
                 await client
                     .query("update days set available_wrkld = $1 where day = $2", 
                     [day.available_wrkld - sub, day.day.toISOString().split('T')[0]])
@@ -205,6 +205,15 @@ app.post('/api/submit_order', cookieJwtAuth, async (req, res) => {
 });
   
 
-app.get('/api/tmp', (req, res) => {
-    res.status(200).send("hello");
+app.get('/api/orders', cookieJwtAuth, (req, res) => {
+    const user: Token = jwt.decode(req.cookies.authtoken) as Token
+    client
+        .query("select id, status, order_time, order_deadline, deposit_deadline, price, paid, details, note from orders where user_id = $1;", [user.id])
+        .then(dbres => {
+            res.status(200).json(dbres.rows);
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).send();
+        })
 })
