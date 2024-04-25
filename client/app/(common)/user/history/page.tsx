@@ -1,5 +1,4 @@
 import axios, { AxiosRequestConfig } from "axios";
-import { server_address } from "@/config";
 import { cookies } from "next/headers";
 
 
@@ -26,17 +25,7 @@ interface Order {
 async function getOrders() {
     try {
         const cookieStore = cookies();
-        const token = cookieStore.get('authtoken');
-        const axiosConfig: AxiosRequestConfig = {
-            method: 'get',
-            url: server_address + '/api/orders',
-            withCredentials: true,
-            headers: {
-                Cookie: `authtoken=${cookieStore.get('authtoken')?.value}`
-            }
-        };
-
-        return await axios(axiosConfig)
+        return await axios.post(process.env.SERVER + '/api/orders', {token: cookieStore.get('authtoken')?.value})
             .then(res => {
                 if (res.data.length == 0) {
                     return (

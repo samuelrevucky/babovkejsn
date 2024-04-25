@@ -1,4 +1,3 @@
-import jwt from 'jsonwebtoken';
 import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(request: NextRequest) {
@@ -7,10 +6,6 @@ export function middleware(request: NextRequest) {
         if (token === undefined) {
             return NextResponse.redirect(new URL('/login', request.url));
         }
-        else {
-            //console.log("ahoj");
-            //console.log(jwt.decode(token));
-        }
     }
     if (request.nextUrl.pathname.startsWith('/login')) {
         if (request.cookies.has('authtoken')) {
@@ -18,8 +13,3 @@ export function middleware(request: NextRequest) {
         }
     }
 }
-/*
-export const config = {
-    matcher: ['/user', '/user/profile', '/user/order', '/user/modify_udata', '/user/history'],
-}
-*/

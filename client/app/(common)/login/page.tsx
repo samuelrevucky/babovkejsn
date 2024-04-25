@@ -1,15 +1,11 @@
 "use client";
 
-import axios from "axios";
 import { useState } from "react";
-import { server_address } from "@/config";
-import { useRouter } from "next/navigation";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/20/solid";
+import { login } from "./login";
 
 
 export default function Login() {
-
-  const router = useRouter();
 
   const [showMessage, setShowMessage] = useState("hidden text-red-500");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -38,26 +34,13 @@ export default function Login() {
   };
 
   const handleSubmit = async () => {
-    await axios.post(server_address + '/api/authenticate', {
-        mail: formData.email,
-        password: formData.password,
-        rememberMe: formData.rememberMe
-    }, { 
-        withCredentials: true,
-    })
-    .then(function (response) {
-        if (response.data.authenticated) {
-          router.push("/user/profile");
-          router.refresh();
-        }
-        else {
-          setFormData({...formData, password: ''});
-          setShowMessage("text-red-500");
-        }
-    })
-    .catch(function (error) {
-        console.error(error);
-    });
+    try{
+      login(formData.email, formData.password, formData.rememberMe);
+    }
+    catch {
+      setFormData({...formData, password: ''});
+      setShowMessage("text-red-500");
+    }
   };
 
   return (

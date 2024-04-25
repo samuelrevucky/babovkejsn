@@ -1,7 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
-import cors from 'cors';
 dotenv.config();
 import { Client } from 'pg';
 import jwt, { Secret } from 'jsonwebtoken';
@@ -11,14 +10,15 @@ import { error } from 'console';
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-    origin: 'http://localhost:3000',
-    credentials: true
-}));
-app.listen(8000);
+app.listen(process.env.PORT);
 
-const client = new Client();
+const connectionString = process.env.DATABASE_URL;
+const client = new Client({connectionString});
 client.connect();
+
+app.get('/', (req, res) => {
+    res.status(200).send("hello");
+})
 
 
 app.post('/api/authenticate', (req, res) => {
@@ -37,16 +37,10 @@ app.post('/api/authenticate', (req, res) => {
             const user = dbres.rows[0];
             delete user.password;
 
-            const token = jwt.sign(user, process.env.SECRET as Secret, { expiresIn: rememberMe ? "30d" : "10m" });
+            const token = jwt.sign(user, process.env.SECRET as Secret, { expiresIn: rememberMe ? "30d" : "1h" });
             res
             .status(200)
-            .cookie("authtoken", token, {
-                httpOnly: true,
-                sameSite: false,
-                secure: true,
-                maxAge: rememberMe ? 1000*60*60*24*30 : 1000*60*10,
-            })
-            .json({ authenticated: true, role: user.role, message: 'Authentication successful' });
+            .json({ authenticated: true, role: user.role, message: 'Authentication successful', token: token});
         }
     })
     .catch(err => {
@@ -57,9 +51,9 @@ app.post('/api/authenticate', (req, res) => {
 
 // middleware verification function
 const cookieJwtAuth = (req: Request, res: Response, next: NextFunction) => {
-    const token = req.cookies.authtoken;
+    const token = req.body.token as string;
     try {
-        jwt.verify(token, process.env.SECRET as Secret);
+        const verifiedToken = jwt.verify(token, process.env.SECRET as Secret);
         next();
     } 
     catch (err) {
@@ -135,9 +129,8 @@ interface Token {
 app.post('/api/submit_order', cookieJwtAuth, async (req, res) => {
 
     // TODO deposit management
-    
-    const user: Token = jwt.decode(req.cookies.authtoken) as Token;
-    const { order_deadline, preparation_time, price, details, note } = req.body;
+    const { token, order_deadline, preparation_time, price, details, note } = req.body;
+    const user: Token = jwt.decode(token) as Token;
     let currentDate = new Date();
     currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
     currentDate.setMinutes(currentDate.getMinutes() - currentDate.getTimezoneOffset());
@@ -153,7 +146,6 @@ app.post('/api/submit_order', cookieJwtAuth, async (req, res) => {
     let days: any[] = [];
     let available_wrkld = 0;
     let leftWorkToAssign = preparation_time;
-    console.log(earliestDateToStartProducing, order_deadline);
     await client
         .query("begin")
         .then(async () => {
@@ -162,7 +154,6 @@ app.post('/api/submit_order', cookieJwtAuth, async (req, res) => {
                     [earliestDateToStartProducing, order_deadline])
                 .then(dbres => {
                     days = dbres.rows;
-                    console.log(days);
                     days.map(day => {available_wrkld += day.available_wrkld});
                     if (available_wrkld < preparation_time) throw error("Nedostatok casu na vyrobu");
                 })
@@ -205,8 +196,8 @@ app.post('/api/submit_order', cookieJwtAuth, async (req, res) => {
 });
   
 
-app.get('/api/orders', cookieJwtAuth, (req, res) => {
-    const user: Token = jwt.decode(req.cookies.authtoken) as Token
+app.post('/api/orders', cookieJwtAuth, (req, res) => {
+    const user: Token = jwt.decode(req.body.token) as Token
     client
         .query("select id, status, order_time, order_deadline, deposit_deadline, price, paid, details, note from orders where user_id = $1;", [user.id])
         .then(dbres => {

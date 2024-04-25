@@ -6,8 +6,8 @@ import { useState } from "react";
 import { Product, Day } from "./page";
 import { PlusIcon, MinusIcon, TrashIcon } from "@heroicons/react/20/solid";
 import axios from "axios";
-import { server_address } from "@/config";
 import { useRouter } from "next/navigation";
+import { getToken } from "../get_token";
 
 
 export interface cartItem {
@@ -20,7 +20,7 @@ export interface cartItem {
     quantity: number
 };
 
-export default function Order({ products, days }: { products: Product[], days: Day[][] }) {
+export default function Order({ products, days, server }: { products: Product[], days: Day[][], server: string }) {
     const router = useRouter();
     // cart logic
     
@@ -71,14 +71,16 @@ export default function Order({ products, days }: { products: Product[], days: D
         setNote(e.target.value);
         console.log(note);
     };
-    const handleOrderSubmit = () => {
-        axios.post(server_address + '/api/submit_order', {
+    const handleOrderSubmit = async () => {
+        const token = await getToken();
+        axios.post(server + '/api/submit_order', {
+            token: token,
             order_deadline: selectedDate?.day,
             preparation_time: totalProductionTime,
             price: totalPrice,
             details: cart.map(([cartItem, number]) => cartItem),
             note: note
-        }, {withCredentials: true})
+        })
         .then(() => {router.push('/user/successful_order');})
         .catch(err => {router.push('/user/err_order')});
     };
