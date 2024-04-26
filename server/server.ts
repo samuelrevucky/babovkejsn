@@ -197,9 +197,10 @@ app.post('/api/submit_order', cookieJwtAuth, async (req, res) => {
   
 
 app.post('/api/orders', cookieJwtAuth, (req, res) => {
+    //TODO order by active first
     const user: Token = jwt.decode(req.body.token) as Token
     client
-        .query("select id, status, order_time, order_deadline, deposit_deadline, price, paid, details, note from orders where user_id = $1;", [user.id])
+        .query("select id, status, order_time, order_deadline, deposit_deadline, price, paid, details, note from orders where user_id = $1 order by order_deadline desc;", [user.id])
         .then(dbres => {
             res.status(200).json(dbres.rows);
         })
