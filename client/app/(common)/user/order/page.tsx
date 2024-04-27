@@ -25,12 +25,12 @@ export interface Day {
   note: string
 }
 
-async function getProducts() {
+export async function getProducts() {
   const response = await axios.get(process.env.SERVER + '/api/products', {withCredentials: true});
   return response.data;
 };
 
-async function getDays(month: number) {
+export async function getDays(month: number) {
   const response = await axios.get(process.env.SERVER + '/api/days/' + month, {withCredentials: true});
   return response.data;
 }
