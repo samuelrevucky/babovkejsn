@@ -20,7 +20,7 @@ export default async function Tiramisu() {
                     />
                 </div>
                 <div className="flex flex-col lg:w-1/2 my-10 items-center">
-                    <h2 className={`${bebas.className} mb-3 text-5xl font-semibold`}>
+                    <h2 className={`${bebas.className} mb-3 text-5xl text-center font-semibold`}>
                         Talianske tiramisu pre kožmekerov
                     </h2>
                     <div>
