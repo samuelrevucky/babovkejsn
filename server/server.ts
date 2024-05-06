@@ -2,24 +2,93 @@ import express, { Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 dotenv.config();
-import { Client } from 'pg';
+import pkg from 'pg';
+const { Client } = pkg;
 import jwt, { Secret } from 'jsonwebtoken';
 import { error } from 'console';
+import AdminJS from 'adminjs';
+import AdminJSExpress from '@adminjs/express';
+import Connect from 'connect-pg-simple';
+import session from 'express-session';
+import { Adapter, Resource, Database } from '@adminjs/sql';
+import cors from 'cors';
 
 
-const app = express();
-app.use(express.json());
-app.use(cookieParser());
-app.listen(process.env.PORT);
+AdminJS.registerAdapter({
+    Database,
+    Resource,
+});
+
+const db = await new Adapter('postgresql', {
+    connectionString: process.env.DATABASE_URL,
+    database: 'babovkejsn'
+  }).init();
 
 const connectionString = process.env.DATABASE_URL;
 const client = new Client({connectionString});
 client.connect();
 
+const authenticate = async (email: string, password: string) => {
+    return await client.query("select role, password from users where mail=$1", [email])
+        .then((res) => {
+            if (res.rowCount === 1 && res.rows[0].role === 'admin' && res.rows[0].password === password) {
+                return Promise.resolve({email: email, password: password});
+            }
+            else {
+                return null;
+            }
+        })
+        .catch((err) => {console.log(err); return null;});
+}
+
+const ConnectSession = Connect(session);
+const sessionStore = new ConnectSession({
+    conObject: {
+      connectionString: process.env.DATABASE_URL
+    },
+    tableName: 'session',
+    createTableIfMissing: true,
+});
+
+const admin = new AdminJS({
+    databases: [db],
+});
+admin.watch();
+
+const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
+    admin,
+    {
+      authenticate,
+      cookieName: 'adminjs',
+      cookiePassword: 'sessionsecret',
+    },
+    null,
+    {
+      store: sessionStore,
+      resave: true,
+      saveUninitialized: true,
+      secret: 'sessionsecret',
+      cookie: {
+        httpOnly: process.env.NODE_ENV === 'production',
+        secure: process.env.NODE_ENV === 'production',
+      },
+      name: 'adminjs',
+    }
+);
+
+const app = express();
+app.use(admin.options.rootPath, adminRouter);
+app.use(express.json());
+app.use(cookieParser());
+app.use(cors({
+    origin: process.env.ORIGIN,
+    credentials: true
+}));
+app.listen(process.env.PORT);
+
 app.get('/', (req, res) => {
     res.status(200).send("hello");
 })
-
 
 app.post('/api/authenticate', (req, res) => {
 

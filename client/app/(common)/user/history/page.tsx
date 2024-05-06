@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios from "axios";
 import { cookies } from "next/headers";
 
 
@@ -55,7 +55,7 @@ async function getOrders() {
                         const parts2 = (order.order_time as unknown as string).split('T');
                         const parts2_date = parts2[0].split('-');
                         const parts2_time = parts2[1].split('.')[0];
-                        order.order_time = `${parts[2]}.${parts[1]}.${parts[0]} ${parts2_time}`;
+                        order.order_time = `${parts2_date[2]}.${parts2_date[1]}.${parts2_date[0]} ${parts2_time}`;
                     })
                     return (
                         <div className="p-6 mx-5 bg-white rounded-2xl border-2 shadow-lg flex flex-col">
