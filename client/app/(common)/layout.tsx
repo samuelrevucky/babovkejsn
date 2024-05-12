@@ -13,8 +13,8 @@ function LoginButton() {
     return <NavItem href="/login">Prihlásiť sa</NavItem>;
   }
   else {
-    const token  = jwt.decode(cookieStore.get('authtoken').value) as { mail: string };
-    return <UserMenu user={token.mail}/>;
+    const token  = jwt.decode(cookieStore.get('authtoken').value) as { email: string };
+    return <UserMenu user={token.email}/>;
   }
 }
 

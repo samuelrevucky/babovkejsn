@@ -8,13 +8,13 @@ export async function login(email: string, password: string, rememberMe: boolean
     "use server";
     const cookieStore = cookies();
     await axios.post(process.env.SERVER + '/api/authenticate', {
-        mail: email,
+        email: email,
         password: password,
         rememberMe: rememberMe
     }, { 
         withCredentials: true,
     })
-    .then(function (response) {
+    .then((response) => {
         if (response.data.authenticated) {
             cookieStore.set('authtoken', response.data.token, {
                 maxAge: rememberMe ? 3600*24*30 : 3600,

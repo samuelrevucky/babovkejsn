@@ -5,7 +5,6 @@ import { Menu, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link';
-import { getCookie } from 'cookies-next';
 
 
 export function NavItem ({ href, children }: Readonly<{ href: string; children: React.ReactNode; }>) {
