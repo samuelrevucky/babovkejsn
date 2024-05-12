@@ -336,7 +336,21 @@ app.post('/api/orders', cookieJwtAuth, (req, res) => {
             res.status(200).json(dbres.rows);
         })
         .catch(err => {
-            console.error(err);
+            console.log(err);
+            res.status(500).send();
+        })
+})
+
+
+app.post('/api/get_user', cookieJwtAuth, (req, res) => {
+    const user: Token = jwt.decode(req.body.token) as Token
+    client
+        .query("select name, lastname, phone, country, street, city, postalcode from users where email = $1", [user.email])
+        .then(dbres => {
+            res.status(200).json(dbres.rows[0]);
+        })
+        .catch(err => {
+            console.log(err);
             res.status(500).send();
         })
 })
